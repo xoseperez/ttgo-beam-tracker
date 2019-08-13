@@ -2,7 +2,7 @@
 
 TTGO-BEAM based TTN Tracker
 
-Copyright (C) 2018 by Xose Pérez <xose dot perez at gmail dot com>
+Copyright (C) 2018-2019 by Xose Pérez <xose dot perez at gmail dot com>
 
 This code requires LMIC library by Matthijs Kooijman
 https://github.com/matthijskooijman/arduino-lmic

@@ -3,7 +3,7 @@
 TTN module
 Wrapper to use TTN with the LMIC library
 
-Copyright (C) 2018 by Xose Pérez <xose dot perez at gmail dot com>
+Copyright (C) 2018-2019 by Xose Pérez <xose dot perez at gmail dot com>
 
 This code requires the MCCI LoRaWAN LMIC library
 by IBM, Matthis Kooijman, Terry Moore, ChaeHee Won, Frank Rose
