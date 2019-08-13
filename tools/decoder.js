@@ -86,18 +86,13 @@ function Decoder(bytes, port) {
   // GPS info
   if (port == 10) {
     var gps = unpack(bytes);
-    decoded.latitude = gps[0].toFixed(4);
-    decoded.longitude = gps[1].toFixed(4);
-    decoded.altitude = gps[2];
-    decoded.sats = gps[3];
-    if (gps.length > 4) {
-      decoded.hdop = gps[4].toFixed(4);
-    }
-    return decoded;
+    decoded.latitude = parseFloat(gps[0].toFixed(6));
+    decoded.longitude = parseFloat(gps[1].toFixed(6));
+    decoded.altitude = parseFloat(gps[2].toFixed(2));
+    decoded.hdop = parseFloat(gps[3].toFixed(2));
+    decoded.sats = parseInt(gps[4], 10);
   }
 
-  // generic Lua pack
-  decoded.data = unpack(bytes);
   return decoded;
 
 }
