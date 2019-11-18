@@ -200,7 +200,7 @@ void ttn_adr(bool enabled) {
     LMIC_setAdrMode(enabled);
 }
 
-void ttn_cnt(unsigned char num) {
+void ttn_cnt(unsigned long num) {
     LMIC_setSeqnoUp(num);
 }
 
