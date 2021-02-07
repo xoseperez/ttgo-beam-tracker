@@ -20,8 +20,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "configuration.h"
-#include "MessagePack.h"
 #include <rom/rtc.h>
+#include <CayenneLPP.h>
+
+// Cayenne buffer
+CayenneLPP lpp(51);
 
 // Message counter, stored in RTC memory, survives deep sleep
 RTC_DATA_ATTR uint32_t count = 0;
@@ -32,6 +35,20 @@ RTC_DATA_ATTR uint32_t count = 0;
 
 void send() {
 
+    /*
+    
+    Channel definition for trackers:
+
+    CHANNEL 0: counter (digital_out_0)
+    CHANNEL 1: gps (gps_1.altitude gps_1.latitude gps_1.longitude)
+    CHANNEL 2: temperature (temperature_2)
+    CHANNEL 3: accelerometer (accelerometer_3.x accelerometer_3.y accelerometer_3.z)
+    CHANNEL 4: battery (analog_out_4) in volts
+    CHANNEL 5: sats (digital_out_5)
+    CHANNEL 6: hdop (analog_out_4)
+
+    */
+
     char buffer[40];
     snprintf(buffer, sizeof(buffer), "Latitude: %10.6f\n", gps_latitude());
     screen_print(buffer);
@@ -40,12 +57,12 @@ void send() {
     snprintf(buffer, sizeof(buffer), "Error: %4.2fm\n", gps_hdop());
     screen_print(buffer);
 
-    MessagePack * message = new MessagePack();
-    message->addFloat(gps_latitude());
-    message->addFloat(gps_longitude());
-    message->addFloat(gps_altitude());
-    message->addFloat(gps_hdop());
-    message->addShort(gps_sats());
+    lpp.reset();
+    lpp.addDigitalOutput(0, count);
+    lpp.addGPS(1, gps_latitude(), gps_longitude(), gps_altitude());
+    //lpp.addAnalogOutput(4, battery());
+    lpp.addDigitalOutput(5, gps_sats());
+    lpp.addAnalogOutput(6, gps_hdop());
 
     #if LORAWAN_CONFIRMED_EVERY > 0
         bool confirmed = (count % LORAWAN_CONFIRMED_EVERY == 0);
@@ -54,7 +71,7 @@ void send() {
     #endif
 
     ttn_cnt(count);
-    ttn_send(message->pack(), message->length(), LORAWAN_PORT, confirmed);
+    ttn_send(lpp.getBuffer(), lpp.getSize(), LORAWAN_PORT, confirmed);
 
     count++;
 
