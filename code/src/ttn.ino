@@ -179,6 +179,9 @@ void ttn_join() {
         // Disable link check validation
         LMIC_setLinkCheckMode(0);
 
+        // TTN uses a 5 seconds delay window for RX1
+        LMIC.rx1DrOffset = 5;
+
         // TTN uses SF9 for its RX2 window.
         LMIC.dn2Dr = DR_SF9;
 

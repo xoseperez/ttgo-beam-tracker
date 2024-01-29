@@ -59,7 +59,11 @@ void send() {
 
     lpp.reset();
     lpp.addDigitalOutput(0, count);
-    lpp.addGPS(1, gps_latitude(), gps_longitude(), gps_altitude());
+    if (gps_lock()) {
+        lpp.addGPS(1, gps_latitude(), gps_longitude(), gps_altitude());
+    } else {
+        screen_print("No GPS lock yet\n");
+    }
     //lpp.addAnalogOutput(4, battery());
     lpp.addDigitalOutput(5, gps_sats());
     lpp.addAnalogOutput(6, gps_hdop());
@@ -81,24 +85,36 @@ void sleep() {
 
     #if SLEEP_BETWEEN_MESSAGES
 
-        // Show the going to sleep message on the screen
-        char buffer[20];
-        snprintf(buffer, sizeof(buffer), "Sleeping in %3.1fs\n", (MESSAGE_TO_SLEEP_DELAY / 1000.0));
-        screen_print(buffer);
+        if (gps_lock()) {
 
-        // Wait for MESSAGE_TO_SLEEP_DELAY millis to sleep
-        delay(MESSAGE_TO_SLEEP_DELAY);
+            // Show the going to sleep message on the screen
+            char buffer[20];
+            snprintf(buffer, sizeof(buffer), "Sleeping in %3.1fs\n", (MESSAGE_TO_SLEEP_DELAY / 1000.0));
+            screen_print(buffer);
 
-        // Turn off screen
-        screen_off();
+        }
+    
+    #endif
 
-        // Set the user button to wake the board
-        sleep_interrupt(BUTTON_PIN, LOW);
+    // Wait for MESSAGE_TO_SLEEP_DELAY millis to sleep
+    delay(MESSAGE_TO_SLEEP_DELAY);
 
-        // We sleep for the interval between messages minus the current millis
-        // this way we distribute the messages evenly every SEND_INTERVAL millis
-        uint32_t sleep_for = (millis() < SEND_INTERVAL) ? SEND_INTERVAL - millis() : SEND_INTERVAL;
-        sleep_millis(sleep_for);
+    #if SLEEP_BETWEEN_MESSAGES
+
+        if (gps_lock()) {
+        
+            // Turn off screen
+            screen_off();
+
+            // Set the user button to wake the board
+            sleep_interrupt(BUTTON_PIN, LOW);
+
+            // We sleep for the interval between messages minus the current millis
+            // this way we distribute the messages evenly every SEND_INTERVAL millis
+            uint32_t sleep_for = (millis() < SEND_INTERVAL) ? SEND_INTERVAL - millis() : SEND_INTERVAL;
+            sleep_millis(sleep_for);
+        
+        }
 
     #endif
 
@@ -196,21 +212,9 @@ void loop() {
 
     // Send every SEND_INTERVAL millis
     static uint32_t last = 0;
-    static bool first = true;
     if (0 == last || millis() - last > SEND_INTERVAL) {
-        if (0 < gps_hdop() && gps_hdop() < 50 && gps_latitude() != 0 && gps_longitude() != 0) {
-            last = millis();
-            first = false;
-            send();
-        } else {
-            if (first) {
-                screen_print("Waiting GPS lock\n");
-                first = false;
-            }
-            if (millis() > GPS_WAIT_FOR_LOCK) {
-                sleep();
-            }
-        }
+        last = millis();
+        send();
     }
-
+    
 }

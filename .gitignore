@@ -1,3 +1,5 @@
+test
 .pio*
 *.gch
 credentials.h
+.vscode

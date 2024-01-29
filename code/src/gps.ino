@@ -28,6 +28,10 @@ void gps_time(char * buffer, uint8_t size) {
     snprintf(buffer, size, "%02d:%02d:%02d", _gps.time.hour(), _gps.time.minute(), _gps.time.second());
 }
 
+bool gps_lock() {
+    return ((gps_hdop() < 50) && (gps_latitude() != 0) && (gps_longitude() != 0));
+}
+
 float gps_latitude() {
     return _gps.location.lat();
 }
